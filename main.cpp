@@ -1,6 +1,6 @@
 #pragma warning(default:4996)
 #pragma warning(disable:4018)
-#include "../std_lib_facilities.h"
+#include "std_lib_facilities.h"
 #include "ImageIOBase.h"
 #include "ImageIOFactory.h"
 #include "ImageFilter.h"
