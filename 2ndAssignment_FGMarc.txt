@@ -1,0 +1,68 @@
+### Image Processing Library - FG Marc 10.11.2021 PMI ###
+
+This library provides functions to read and write medical images. It accepts .pip and .mhd file extensions. For reading the files, images have to be in the local directory. Also, written images will be created in the local directory.
+
+All functions are included in a namespace called fgm_library (enabled by 'using namespace fgm_library' in main.cpp)
+
+The base class for read/write PIP and read/write MHD functions is ImageIOBase.
+The abstract ImageIOBase has:
+-A protected constructor that takes a filename 
+-A protected string that holds the filename 
+-A virtual destructor 
+-Deleted copy constructor and deleted assignment operator
+-A pure virtual read and write function 
+
+PIP and MHD functions are then virtual overrided functions defined in PipImageIO.h and MhdImageIO.h respectively. Note: Because initially, I implemented those as functions, not as methods (inside the class), private member of the class does not contain any variables. (Can be improved in the future)
+The read function will always return an Image type object. Image is a class defined in Image.h. Write function has one of the arguments as Image object type. 
+
+In ImageIOFactory, the string filename is processed and depending on the type of the file, objects to PipImageIO or MhdImageIO are returned.
+Image.h contains implementations of: the constructors and destructors, the assignment operators, iterators, size/resize functions and operators.
+
+---------------------------------------------------------------
+For using read and write, in main.cpp function getIO from ImageIOFactory has to be called. Ex: unique_ptr<ImageIOBase> io = ImageIOFactory::getIO("brain.mhd")
+then, by calling io -> read(); image information will be read, or io->write(image, { 109, 91, 80, 1, 1 }); to write (image and dimensions in a file). Note: in order to write in another file: io = ImageIOFactory::getIO("brain2.mhd"), io pointer can be changed.
+The usage for unique_ptr is implemented so delete is not needed for io.
+---------------------------------------------------------------
+
+For image processing and analysis, ImageFilter.h provides a public interface where execute function is used as a tool builder and provides functions as setInput, update getOuput for users.
+ImageFilter is implemented to work with Image.h
+
+Filters implemented that inherit ImageFilter: 
+1. ThresholdImageFilter -> has been updated to work with Image class : resize, i.size()
+2. Statistics Filter provides: GetMin, GetMax, GetMean, GetSum, GetSigma, GetVariance functions.
+3. ConvolutionFilter. It is an averaging filter within a window that can go up to 5d. There are 2 set functions: 1. setRadius(value) - decides the exploring limits in the left and right of the actual pixel and 2. setKernelDimensions (1,1,1,0,0) which can get boolean values. For 3d (1,1,1,0,0), for 5d (1,1,1,1,1), etc.
+4. Mask Filter. This filter takes two input images, sets voxels to 0 where the mask is 0 and produces another output image. 3 public functions provided: setInputMask(), getInputMask() and update(). With set input mask we set the desired mask for an image as explained, with setInput we cat set the input with pixel values and then, by calling update overrided function,  the transform function is executed.
+
+Extra:
+1. Median Filter: Find the median in a vector and replace actual pixel value. Similar to ConvolutionFilter it has a setRadius and setKernelDimensions.
+2. Median Filter from Sonka book: Find median using Sonka's algorithm, interface and functionality similar to Median Filter, but with another algorithm. It only works for 3D kernel dimensions at this moment. (improvement possible in the future)  
+3. Laplacian Filter: Convolution with laplacian Mask. Only works for 3d (can be used for edge detection)
+4. Gaussian filter 3x3 blur: perform convolution with Gaussian 3x3. Works only for 3d. (used for smoothing)
+
+Optimizations/execution speed:
+-Save execution time with assign _r only for specific kernel dimensions (setKerneldimension Function)
+-The below lines of code could replace the min and max (clamping idea) from Image.h operator() definition. While testing them, I've observed a decrease in execution time with like around 100 ms. But due to the visual aspect i decided to take them out from the final application. The idea is simple, do some preprocessing directives and not waste time in calling min and max functions.
+#define MAX(X,Y) ((X>Y) ? (X) : (Y))
+#define MIN(X,Y) ((X<Y) ? (X) : (Y))
+#define ADJUST(D,N) (MAX(0, MIN(D, _dimensions[N]-1)))
+return _data[(ADJUST(t,4) * _dimensions[3] * _dimensions[0] * _dimensions[1] * _dimensions[2]) + (ADJUST(c,3) * _dimensions[0] * _dimensions[1] * _dimensions[2]) + (ADJUST(z,2) * _dimensions[0] * _dimensions[1]) + (ADJUST(y,1) * _dimensions[0]) + ADJUST(x,0)]
+
+Pipelines in main.cpp:
+0. Get Image Statistics
+1. Get Image Mean + Smoothing image with convolutionFilter (it can be with Gaussian also) +  Threshold the image (below the mean) and create a new image + Apply Mask Filter. (in the darker sides of the image will be 0 now)
+2. Apply Gaussian smoothing (better than average convolution for edge detection) + Apply Laplacian  + write laplacian image +  for loop to invert pixel values + Threshold the image to display only the inverted ex negative values + Apply Mask Filter to extract edges
+3. Read brain.mhd + Apply Median  + create Image (pipeline3_medianfilter) +  Apply Median Filter Sonka + Create Image (pipeline3_medianfiltersonka) (compare efficiency, execution time between the 2 filters). It seems that Median filter from Sonka book slighlty preservers edges better. In terms of execution time, i tried even with radius 5 and the algorithm of Sonka is slower than the normal Median Filter, which would be obvious when looking at the number of loops Sonka requires.  It also might by my old laptop (intel i3 processor) 
+4. There are some commented lines at the bottom, that test corrupt files. Uncomment them for testing Error_handling. Error_handling is implemented in PipImageIO.h and MhdImageIO.h which throws run_time errors for corrupt files.
+
+Execution time for specific algorithms are printed in cout. Algorithms are processed with radius = 1.
+
+What can be improved more: 
+- implement < operator in Image.h for suppresing C4018 warning 
+- shared_ptr
+- more filters (wanted to implement the gaussian function also for 5d but due to the lack of time i couldn't afford)
+
+In conclusion, this library and more exactly the filters implemented can be very useful in practice. Example applications: 
+1. For example Median Filters can be used in reducing Gaussian or salt and pepper noise from MRI images. A very accurate brain image is very necessary for diagnosis. The ideal image is then to have an image without noise (efficient median filter means less noise in the image and preserving the edges)
+2. Laplacian Filter has different applications it can also be used for denoising (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4398689/) but it is mainly used for edge detection because it helps in identifying the outline of an object. For example, if we know the edges of gray/white matter we can extract that particular "object" from the rest of the image and look at it in details.
+3. In this library 3x3 gaussian aproximation kernel was used. However, in general,  the Convolution filters like Average or Gaussian can be used to smooth an image by bluring it. Also, deviation is needed for calculating gaussian curve. Both filters attenuate high frequencies more than low frequencies. Gaussian function would perform better because it outputs a weighted average more towards the value of the central pixels.
+Combinations of those 3 criterias can be made to do accurate image processing and Mask Filter together with Statistics Filter and ThresholdImageFilter provide the necessary interface (pipeline 1)
