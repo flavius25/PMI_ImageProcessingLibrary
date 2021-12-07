@@ -1,0 +1,3 @@
+*Dimensions argument no longer needed in write function for PIP/MHD
+*Need to check if too many pixels are in the file (apart from too few pixels in the file)
+*No check for self-assignment

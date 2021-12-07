@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31624.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "C11_17_ImageProcessingLibrary", "C11_17_ImageProcessingLibrary.vcxproj", "{CF306B0B-D017-47A4-8622-394A9B742301}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		BuildOnlyOne|x64 = BuildOnlyOne|x64
+		BuildOnlyOne|x86 = BuildOnlyOne|x86
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CF306B0B-D017-47A4-8622-394A9B742301}.BuildOnlyOne|x64.ActiveCfg = BuildOnlyOne|x64
+		{CF306B0B-D017-47A4-8622-394A9B742301}.BuildOnlyOne|x64.Build.0 = BuildOnlyOne|x64
+		{CF306B0B-D017-47A4-8622-394A9B742301}.BuildOnlyOne|x86.ActiveCfg = BuildOnlyOne|Win32
+		{CF306B0B-D017-47A4-8622-394A9B742301}.BuildOnlyOne|x86.Build.0 = BuildOnlyOne|Win32
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Debug|x64.ActiveCfg = Debug|x64
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Debug|x64.Build.0 = Debug|x64
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Debug|x86.ActiveCfg = Debug|Win32
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Debug|x86.Build.0 = Debug|Win32
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Release|x64.ActiveCfg = Release|x64
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Release|x64.Build.0 = Release|x64
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Release|x86.ActiveCfg = Release|Win32
+		{CF306B0B-D017-47A4-8622-394A9B742301}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5D900E1D-92EA-4B73-8263-C656EFAE23D7}
+	EndGlobalSection
+EndGlobal

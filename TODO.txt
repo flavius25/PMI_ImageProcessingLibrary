@@ -1,0 +1,2 @@
+*Dimensions argument no longer needed in write function for PIP/MHD
+*No check for self-assignment
